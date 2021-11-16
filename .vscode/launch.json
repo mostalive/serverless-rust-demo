@@ -1,0 +1,231 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in library 'products'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--lib",
+					"--package=products"
+				],
+				"filter": {
+					"name": "products",
+					"kind": "lib"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'delete-product'",
+			"cargo": {
+				"args": [
+					"build",
+					"--bin=delete-product",
+					"--package=products"
+				],
+				"filter": {
+					"name": "delete-product",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'delete-product'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=delete-product",
+					"--package=products"
+				],
+				"filter": {
+					"name": "delete-product",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'get-product'",
+			"cargo": {
+				"args": [
+					"build",
+					"--bin=get-product",
+					"--package=products"
+				],
+				"filter": {
+					"name": "get-product",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'get-product'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=get-product",
+					"--package=products"
+				],
+				"filter": {
+					"name": "get-product",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'get-products'",
+			"cargo": {
+				"args": [
+					"build",
+					"--bin=get-products",
+					"--package=products"
+				],
+				"filter": {
+					"name": "get-products",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'get-products'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=get-products",
+					"--package=products"
+				],
+				"filter": {
+					"name": "get-products",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'put-product'",
+			"cargo": {
+				"args": [
+					"build",
+					"--bin=put-product",
+					"--package=products"
+				],
+				"filter": {
+					"name": "put-product",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'put-product'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=put-product",
+					"--package=products"
+				],
+				"filter": {
+					"name": "put-product",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug executable 'dynamodb-streams'",
+			"cargo": {
+				"args": [
+					"build",
+					"--bin=dynamodb-streams",
+					"--package=products"
+				],
+				"filter": {
+					"name": "dynamodb-streams",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug unit tests in executable 'dynamodb-streams'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--bin=dynamodb-streams",
+					"--package=products"
+				],
+				"filter": {
+					"name": "dynamodb-streams",
+					"kind": "bin"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		},
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug integration test 'aws_test'",
+			"cargo": {
+				"args": [
+					"test",
+					"--no-run",
+					"--test=aws_test",
+					"--package=products"
+				],
+				"filter": {
+					"name": "aws_test",
+					"kind": "test"
+				}
+			},
+			"args": [],
+			"cwd": "${workspaceFolder}"
+		}
+	]
+}

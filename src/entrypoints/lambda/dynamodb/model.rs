@@ -166,25 +166,47 @@ impl TryFrom<&HashMap<String, AttributeValue>> for Product {
     /// Try to convert a DynamoDB item into a Product
     ///
     /// This could fail as the DynamoDB item might be missing some fields.
+    /// Two ways of casing the fields, as it seems to be different for me
+    /// than for the example one
     fn try_from(value: &HashMap<String, AttributeValue>) -> Result<Self, Self::Error> {
         Ok(Product {
-            id: value
-                .get("Id")
-                .ok_or(Error::InternalError("Missing id"))?
-                .as_s()
-                .ok_or(Error::InternalError("id is not a string"))?
-                .to_string(),
-            name: value
-                .get("Name")
-                .ok_or(Error::InternalError("Missing name"))?
-                .as_s()
-                .ok_or(Error::InternalError("name is not a string"))?
-                .to_string(),
-            price: value
-                .get("Price")
-                .ok_or(Error::InternalError("Missing price"))?
-                .as_n()
-                .ok_or(Error::InternalError("price is not a number"))?,
+            id: {
+                let found = match value.get("Id") {
+                    Some(id) => id,
+                    None => value
+                        .get("id")
+                        .ok_or(Error::InternalError("Missing id in lambda"))?,
+                };
+
+                found
+                    .as_s()
+                    .ok_or(Error::InternalError("id is not a string"))?
+                    .to_string()
+            },
+            name: {
+                let found = match value.get("Name") {
+                    Some(id) => id,
+                    None => value
+                        .get("name")
+                        .ok_or(Error::InternalError("Missing name in lambda"))?,
+                };
+
+                found
+                    .as_s()
+                    .ok_or(Error::InternalError("name is not a string"))?
+                    .to_string()
+            },
+            price: {
+                let found = match value.get("Price") {
+                    Some(v) => v,
+                    None => value
+                        .get("price")
+                        .ok_or(Error::InternalError("Missing price in lambda"))?,
+                };
+                found
+                    .as_n()
+                    .ok_or(Error::InternalError("price is not a number"))?
+            },
         })
     }
 }
@@ -252,9 +274,7 @@ mod tests {
                     "Id": {
                         "S": "102"
                     },
-                    "Name": {
-                      "S": "new-item2"
-                    },
+                    "Name": { "S": "new-item2" },
                     "Price": {
                       "N": "30.5"
                     }
@@ -273,8 +293,55 @@ mod tests {
         event
     }
 
+    // to restore the id, add this in NewImage:   "Id":  { "S": "0F7ylDuZdSWz77F9"}
+    fn get_ddb_event_with_unparseable_id() -> DynamoDBEvent {
+        let data = r#"
+    { "Records": [{ 
+        "eventID": "923c4e9082935f91618487d93856d306",
+        "eventVersion": "1.1" ,
+
+        "awsRegion": "eu-central-1",
+        "dynamodb": { 
+            "Keys": {
+                "Id": {"S": "0F7ylDuZdSWz77F9"}
+            },
+            "NewImage": {
+                "Price": {"N":"148.82767174148367"} , 
+                "Name": {"S": "3Ow8LNjBsGj60ecw" }            }, 
+            "ApproximateCreationDateTime": 1637075657.0,
+        "OldImage": {}, 
+        "SequenceNumber": "100000000009615304022", 
+        "SizeBytes": 71.0, 
+        "StreamViewType": "NEW_AND_OLD_IMAGES" 
+       }, 
+        "eventSourceARN": "arn:aws:dynamodb:eu-central-1:961051767741:table/rust-products-Table-VNYFY0FE9HRT/stream/2021-11-16T14:43:56.931",
+        "eventName": "INSERT", 
+        "eventSource": "aws:dynamodb"       }] 
+    }"#;
+
+        let event: DynamoDBEvent = serde_json::from_str(data).unwrap();
+
+        event
+    }
     #[test]
-    fn test_deserialize() {
+    fn test_deserialize_version_1_1() {
+        let event = get_ddb_event_with_unparseable_id();
+
+        assert_eq!(event.records.len(), 1);
+        assert_eq!(event.records[0].event_name, "INSERT");
+        assert_eq!(
+            event.records[0]
+                .dynamodb
+                .new_image
+                .get("Name")
+                .unwrap()
+                .as_s(),
+            Some("3Ow8LNjBsGj60ecw")
+        );
+    }
+
+    #[test]
+    fn test_deserialize_v_1_0() {
         let event = get_ddb_event();
 
         assert_eq!(event.records.len(), 2);
@@ -304,7 +371,7 @@ mod tests {
     fn test_dynamodb_into_event() {
         let ddb_event = get_ddb_event();
 
-        let events = ddb_event
+        let events = ddb_event // duplicat from production code
             .records
             .iter()
             .map(|r| r.try_into())

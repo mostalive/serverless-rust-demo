@@ -152,7 +152,7 @@ impl TryFrom<HashMap<String, AttributeValue>> for Product {
         Ok(Product {
             id: value
                 .get_s("id")
-                .ok_or(Error::InternalError("Missing id"))?,
+                .ok_or(Error::InternalError("Missing product id in dynamodb"))?,
             name: value
                 .get_s("name")
                 .ok_or(Error::InternalError("Missing name"))?,

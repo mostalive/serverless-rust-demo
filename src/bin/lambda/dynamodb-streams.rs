@@ -1,8 +1,5 @@
 use lambda_runtime::{handler_fn, Context};
-use products::{
-    entrypoints::lambda::dynamodb::{model::DynamoDBEvent, parse_events},
-    utils::*,
-};
+use products::{entrypoints::lambda::dynamodb::handle_events, utils::*};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
@@ -27,8 +24,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>
     // async closures aren't stable yet. This way, the closure returns a Future,
     // which matches the signature of the lambda function.
     // See https://github.com/rust-lang/rust/issues/62290
-    lambda_runtime::run(handler_fn(|event: DynamoDBEvent, ctx: Context| {
-        parse_events(&event_bus, event, ctx)
+    lambda_runtime::run(handler_fn(|event: serde_json::Value, ctx: Context| {
+        handle_events(&event_bus, event, ctx)
     }))
     .await?;
     Ok(())
