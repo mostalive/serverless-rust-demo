@@ -7,7 +7,7 @@ use std::fmt;
 pub enum Error {
     InitError(&'static str),
     ClientError(String),
-    InternalError(&'static str),
+    InternalError(&'static str), // the static lifetime only works for string constants, saves a few .to_string() calls.
     SdkError(String),
 }
 
