@@ -44,10 +44,10 @@ fn json_to_ddb_event_structs(event: serde_json::Value) -> Result<Vec<Event>, Err
         serde_json::from_value(event.clone()).map(|ddb_event| parse_ddb_events(ddb_event))
         .map_err(|e|
           {
-          let incoming_event = serde_json::to_string_pretty(&event).unwrap();
-          let message = format!("Error parsing dynamo db events:\n{}\nReceived Event Json:\n{}", e, incoming_event);
-
-          Error::ClientError("Error parsing json") });
+             let incoming_event = serde_json::to_string_pretty(&event).unwrap();
+              let message = format!("Error parsing dynamo db events:\n{}\nReceived Event Json:\n{}", e, incoming_event);
+              Error::ClientError(message)
+          });
     result?
 }
 

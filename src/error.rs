@@ -6,7 +6,7 @@ use std::fmt;
 #[derive(Debug)]
 pub enum Error {
     InitError(&'static str),
-    ClientError(&'static str),
+    ClientError(String),
     InternalError(&'static str),
     SdkError(String),
 }
