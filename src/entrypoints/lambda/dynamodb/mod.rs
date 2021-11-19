@@ -7,8 +7,6 @@ use tracing::{info, instrument};
 
 pub mod model;
 
-type E = Box<dyn std::error::Error + Sync + Send + 'static>;
-
 /**
  * Parse outside of DynamoDBEvent, but not yet the records
  * This allows us to report errors with the incoming events' JSON syntax
@@ -18,8 +16,15 @@ type E = Box<dyn std::error::Error + Sync + Send + 'static>;
 pub async fn handle_events(
     event_bus: &dyn EventBus<E = Event>,
     event: serde_json::Value,
-    context: Context,
-) -> Result<(), E> {
+    _: Context,
+) -> Result<(), Error> {
+   handle_events_unboxed(event_bus, event).await
+}
+
+pub async fn handle_events_unboxed(
+    event_bus: &dyn EventBus<E = Event>,
+    event: serde_json::Value,
+) -> Result<(), Error> {
     info!("Handle events");
     info!("Transform events");
     let events = json_to_ddb_event_structs(event.clone()); // cloning not optimal, but still cheaper than printing
@@ -27,7 +32,7 @@ pub async fn handle_events(
         Err(err) => {
             let incoming_event = serde_json::to_string_pretty(&event).unwrap();
             let message = format!("Error parsing dynamo db events: {}\nReceived Event Json:\n{}", err, incoming_event);
-            return Err(err);
+            return Err(Error::ClientError("Error parsing dynamodb events"));
         }
         Ok(evs) => {
          let result = dispatch_events(event_bus, evs).await;
