@@ -1,7 +1,9 @@
 use crate::{domain, event_bus::EventBus, Error, Event};
 use lambda_runtime::Context;
 use rayon::prelude::*;
-use tracing::{error, info, instrument};
+use tracing::{info, instrument};
+
+
 
 pub mod model;
 
@@ -23,19 +25,22 @@ pub async fn handle_events(
     let events = json_to_ddb_event_structs(event.clone()); // cloning not optimal, but still cheaper than printing
     match events {
         Err(err) => {
-            error!(
-                "Event was: {}",
-                serde_json::to_string_pretty(&event).unwrap()
-            );
+            let incoming_event = serde_json::to_string_pretty(&event).unwrap();
+            let message = format!("Error parsing dynamo db events: {}\nReceived Event Json:\n{}", err, incoming_event);
             return Err(err);
         }
-        Ok(evs) => return dispatch_events(event_bus, evs).await,
+        Ok(evs) => {
+         let result = dispatch_events(event_bus, evs).await;
+         return result;
+      }
     }
 }
 
-fn json_to_ddb_event_structs(event: serde_json::Value) -> Result<Vec<Event>, E> {
-    let parsed_event: model::DynamoDBEvent = serde_json::from_value(event)?;
-    return Ok(parse_ddb_events(parsed_event)?);
+fn json_to_ddb_event_structs(event: serde_json::Value) -> Result<Vec<Event>, Error> {
+   let result =
+        serde_json::from_value(event).map_err(|e|
+         Error::ClientError("Error parsing json")).map(|ddb_event| parse_ddb_events(ddb_event) );
+    result?
 }
 
 fn parse_ddb_events(ddb_event: model::DynamoDBEvent) -> Result<Vec<Event>, Error> {
@@ -51,7 +56,7 @@ fn parse_ddb_events(ddb_event: model::DynamoDBEvent) -> Result<Vec<Event>, Error
 pub async fn dispatch_events(
     event_bus: &dyn EventBus<E = Event>,
     events: Vec<Event>,
-) -> Result<(), E> {
+) -> Result<(), Error> {
     info!("Dispatching {} events", events.len());
     domain::send_events(event_bus, &events).await?;
     info!("Done dispatching events");
