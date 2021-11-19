@@ -30,9 +30,7 @@ pub async fn handle_events_unboxed(
     let events = json_to_ddb_event_structs(event.clone()); // cloning not optimal, but still cheaper than printing
     match events {
         Err(err) => {
-            let incoming_event = serde_json::to_string_pretty(&event).unwrap();
-            let message = format!("Error parsing dynamo db events: {}\nReceived Event Json:\n{}", err, incoming_event);
-            return Err(Error::ClientError("Error parsing dynamodb events"));
+            return Err(err);
         }
         Ok(evs) => {
          let result = dispatch_events(event_bus, evs).await;
@@ -43,8 +41,13 @@ pub async fn handle_events_unboxed(
 
 fn json_to_ddb_event_structs(event: serde_json::Value) -> Result<Vec<Event>, Error> {
    let result =
-        serde_json::from_value(event).map_err(|e|
-         Error::ClientError("Error parsing json")).map(|ddb_event| parse_ddb_events(ddb_event) );
+        serde_json::from_value(event.clone()).map(|ddb_event| parse_ddb_events(ddb_event))
+        .map_err(|e|
+          {
+          let incoming_event = serde_json::to_string_pretty(&event).unwrap();
+          let message = format!("Error parsing dynamo db events:\n{}\nReceived Event Json:\n{}", e, incoming_event);
+
+          Error::ClientError("Error parsing json") });
     result?
 }
 
